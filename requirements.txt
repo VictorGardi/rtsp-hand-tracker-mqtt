@@ -1,0 +1,10 @@
+streamlit
+opencv-python
+numpy
+torch 
+torchvision 
+torchaudio
+pyyaml
+tqdm
+matplotlib
+seaborn
