@@ -58,16 +58,15 @@ def generate_rtsp_url(ip: str, hq: bool=True) -> str:
     return f"rtsp://{user}:{pw}@{ip}/{stream}"
 
 def stream_video(ip: str, frame_rate: int = 2) -> None:
-    #rtsp_url = generate_rtsp_url(ip)
-    #player = get_player_from_ip_camera(rtsp_url)
-    player = get_player_from_webcam()
+    rtsp_url = generate_rtsp_url(ip)
+    player = get_player_from_ip_camera(rtsp_url)
+    #player = get_player_from_webcam()
 
     logger.info("loading face detector...")
     detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     prev = 0
     connected = False
     while player.isOpened():
-
         if not connected:
             try:
                 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -109,8 +108,8 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
                 memfile.seek(0)
                 data = memfile.read()
                 try:
-                    # Send form byte array: frame size + frame content
-                    client_socket.sendall(struct.pack("L", len(data)) + data)
+                   # Send form byte array: frame size + frame content
+                   client_socket.sendall(struct.pack("L", len(data)) + data)
                 except OSError:
                     connected = False
 
@@ -185,6 +184,11 @@ def plot_boxes(results, frame, model):
         return frame
 
 if __name__ == "__main__":
+    if "CAMERA_USER" not in os.environ:
+        raise ValueError("CAMERA_USER needs to be set as env variables!")
+    elif "CAMERA_PW" not in os.environ:
+        raise ValueError("CAMERA_PW needs to be set as env variables!")
+
     ip = "192.168.0.128"
     stream_video(ip)
     
