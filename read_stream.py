@@ -5,7 +5,10 @@ from typing import Tuple
 import numpy as np
 import cv2
 from cv2 import VideoCapture
+from cvzone.HandTrackingModule import HandDetector
+import paho.mqtt.client as mqtt
 
+mqtt_broker_ip = "192.168.0.116"
 #from object_detection import model, detect_objects
 #from retinaface import RetinaFace
 
@@ -60,22 +63,39 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
     player = get_player_from_webcam()
 
     logger.info("loading face detector...")
-    detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    #detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     prev = 0
-    connected = False
+    detector = HandDetector(detectionCon=0.8, maxHands=2)
+    client = mqtt.Client(client_id=mqtt_broker_ip, clean_session=True, userdata=None, protocol=mqtt.MQTTv311, transport="tcp")
+    client.username_pw_set(username=os.environ["MQTT_USER"], password=os.environ["MQTT_PW"])
+    client.connect(mqtt_broker_ip)
+
     while player.isOpened():
         time_elapsed = time.time() - prev
-        _, frame = player.read()
+        _, img  = player.read()
         if time_elapsed > 1./frame_rate:
-            frame = rescale_frame(frame, percent=50)
+            frame = rescale_frame(img, percent=50)
             prev = time.time()
-            faces = haar_find_faces(frame, detector)
-            if len(faces) > 0:
-                print(faces)
-                frame = plot_haar_faces(frame, faces)
+            #faces = haar_find_faces(frame, detector)
+            #if len(faces) > 0:
+            #    print(faces)
+            #    frame = plot_haar_faces(frame, faces)
+            hands, img = detector.findHands(img)  # with draw
+            if hands:
+                # Hand 1
+                hand = hands[0]
+                lmList1 = hand["lmList"]  # List of 21 Landmark points
+                bbox1 = hand["bbox"]  # Bounding box info x,y,w,h
+                centerPoint1 = hand['center']  # center of the hand cx,cy
+                handType1 = hand["type"]  # Handtype Left or Right
+
+                fingers = detector.fingersUp(hand)
+                logger.info(fingers)
+                client.publish("home/camera/number_of_fingers", sum(fingers))
+
 
             try:
-                cv2.imshow("Wyze v2 camera", frame)
+                cv2.imshow("Wyze v2 camera", img)
             except cv2.error as e:
                 logger.warning(e)
 
