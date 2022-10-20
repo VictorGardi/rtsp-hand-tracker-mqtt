@@ -5,11 +5,10 @@ import time
 
 import cv2
 import numpy as np
-import paho.mqtt.client as mqtt
 from cv2 import VideoCapture
 from cvzone.HandTrackingModule import HandDetector
 
-print(os.environ["MQTT_BROKER_IP"])
+from mqtt import connect_to_mqtt_broker
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -66,15 +65,7 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
     prev: float = 0
     detector = HandDetector(detectionCon=0.8, maxHands=2)
     if not DEBUG:
-        client = mqtt.Client(
-            client_id=os.environ["MQTT_BROKER_IP"],
-            clean_session=True,
-            userdata=None,
-            protocol=mqtt.MQTTv311,
-            transport="tcp",
-        )
-        client.username_pw_set(username=os.environ["MQTT_USER"], password=os.environ["MQTT_PW"])
-        client.connect(os.environ["MQTT_BROKER_IP"])
+        client = connect_to_mqtt_broker()
 
     while player.isOpened():
         time_elapsed = time.time() - prev
