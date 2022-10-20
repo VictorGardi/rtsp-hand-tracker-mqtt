@@ -1,4 +1,5 @@
 import os
+import argparse
 import time
 import logging
 from typing import Tuple
@@ -9,11 +10,9 @@ from cvzone.HandTrackingModule import HandDetector
 import paho.mqtt.client as mqtt
 
 mqtt_broker_ip = "192.168.0.116"
-#from object_detection import model, detect_objects
-#from retinaface import RetinaFace
 
-logger = logging.getLogger(__file__)
-
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 """ TODO: 
@@ -49,6 +48,10 @@ def generate_rtsp_url(ip: str, hq: bool=True) -> str:
     Returns:
         str: rtsp_url as "rtsp://user:pw@camera_ip"
     """
+    if "CAMERA_USER" not in os.environ:
+        raise ValueError("CAMERA_USER needs to be set as env variables!")
+    elif "CAMERA_PW" not in os.environ:
+        raise ValueError("CAMERA_PW needs to be set as env variables!")
     user = os.environ["CAMERA_USER"]
     pw = os.environ["CAMERA_PW"]
     if hq:
@@ -58,23 +61,26 @@ def generate_rtsp_url(ip: str, hq: bool=True) -> str:
     return f"rtsp://{user}:{pw}@{ip}/{stream}"
 
 def stream_video(ip: str, frame_rate: int = 2) -> None:
-    #rtsp_url = generate_rtsp_url(ip)
-    #player = get_player_from_ip_camera(rtsp_url)
-    player = get_player_from_webcam()
+    if not DEBUG:
+        rtsp_url = generate_rtsp_url(ip)
+        player = get_player_from_ip_camera(rtsp_url)
+    else:
+        player = get_player_from_webcam()
 
     logger.info("loading face detector...")
     #detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     prev = 0
     detector = HandDetector(detectionCon=0.8, maxHands=2)
-    client = mqtt.Client(client_id=mqtt_broker_ip, clean_session=True, userdata=None, protocol=mqtt.MQTTv311, transport="tcp")
-    client.username_pw_set(username=os.environ["MQTT_USER"], password=os.environ["MQTT_PW"])
-    client.connect(mqtt_broker_ip)
+    if not DEBUG:
+        client = mqtt.Client(client_id=mqtt_broker_ip, clean_session=True, userdata=None, protocol=mqtt.MQTTv311, transport="tcp")
+        client.username_pw_set(username=os.environ["MQTT_USER"], password=os.environ["MQTT_PW"])
+        client.connect(mqtt_broker_ip)
 
     while player.isOpened():
         time_elapsed = time.time() - prev
         _, img  = player.read()
         if time_elapsed > 1./frame_rate:
-            frame = rescale_frame(img, percent=50)
+            img = rescale_frame(img, percent=50)
             prev = time.time()
             #faces = haar_find_faces(frame, detector)
             #if len(faces) > 0:
@@ -90,8 +96,14 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
                 handType1 = hand["type"]  # Handtype Left or Right
 
                 fingers = detector.fingersUp(hand)
+                logger.info(f"Number of fingers: {sum(fingers)}")
                 logger.info(fingers)
-                client.publish("home/camera/number_of_fingers", sum(fingers))
+                msg = sum(fingers)
+                print(sum(fingers))
+            else:
+                msg = "unavailable"
+            if not DEBUG:
+                client.publish("home/camera/number_of_fingers", msg)
 
 
             try:
@@ -127,10 +139,15 @@ def haar_find_faces(frame, detector) -> np.ndarray:
 
 
 if __name__ == "__main__":
-    if "CAMERA_USER" not in os.environ:
-        raise ValueError("CAMERA_USER needs to be set as env variables!")
-    elif "CAMERA_PW" not in os.environ:
-        raise ValueError("CAMERA_PW needs to be set as env variables!")
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--debug',
+        action='store_true', 
+        help='print debug messages to stderr'
+    )
+    args = parser.parse_args()
+    DEBUG = args.debug
+
 
     ip = "192.168.0.128"
     stream_video(ip)
