@@ -30,7 +30,7 @@ def get_player_from_webcam():
     return cv2.VideoCapture(0)
 
 
-def generate_rtsp_url(ip: str, hq: bool = True) -> str:
+def generate_rtsp_url(ip: str, hq: bool = False) -> str:
     """Generate correct ip format, i.e. "rtsp://user:pw@ip".
         Environment variables CAMERA_USER and CAMERA_PW is needed.
 
@@ -54,11 +54,11 @@ def generate_rtsp_url(ip: str, hq: bool = True) -> str:
 
 
 def stream_video(ip: str, frame_rate: int = 2) -> None:
-    if not DEBUG:
+    if ip == "localhost":
+        player = get_player_from_webcam()
+    else:
         rtsp_url = generate_rtsp_url(ip)
         player = get_player_from_ip_camera(rtsp_url)
-    else:
-        player = get_player_from_webcam()
 
     logger.info("loading face detector...")
     # detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -71,13 +71,17 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
         time_elapsed = time.time() - prev
         _, img = player.read()
         if time_elapsed > 1.0 / frame_rate:
-            img = rescale_frame(img, percent=50)
+            #img = rescale_frame(img, percent=50)
             prev = time.time()
             # faces = haar_find_faces(frame, detector)
             # if len(faces) > 0:
             #    print(faces)
             #    frame = plot_haar_faces(frame, faces)
-            hands, img = detector.findHands(img)  # with draw
+            if DEBUG:
+                hands, img = detector.findHands(img, draw=True)  # with draw
+            else:
+                hands = detector.findHands(img, draw=False)  # with draw
+
             if hands:
                 # Hand 1
                 hand = hands[0]
@@ -87,8 +91,6 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
                 # handType1 = hand["type"]  # Handtype Left or Right
 
                 fingers = detector.fingersUp(hand)
-                logger.info(f"Number of fingers: {sum(fingers)}")
-                logger.info(fingers)
                 msg = sum(fingers)
             else:
                 msg = "unavailable"
