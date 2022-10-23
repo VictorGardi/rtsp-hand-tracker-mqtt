@@ -5,10 +5,15 @@ services:
       #user: root:112409
     volumes:
       - ./:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+          XAUTH_TOKEN: ${XAUTH_DOCKER_TOKEN}
     network_mode: host
+    devices:
+      - /dev/video0:/dev/video0
     environment:
       - CAMERA_IP=${CAMERA_IP}
       - CAMERA_USER=${CAMERA_USER}
@@ -16,4 +21,5 @@ services:
       - MQTT_USER=${MQTT_USER}
       - MQTT_PW=${MQTT_PW}
       - MQTT_BROKER_IP=${MQTT_BROKER_IP}
-    command: python3 read_stream.py
+      - DISPLAY=${DISPLAY}
+    command: python3 -u read_stream.py --debug

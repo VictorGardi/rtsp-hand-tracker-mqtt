@@ -7,11 +7,10 @@ import cv2
 import numpy as np
 from cv2 import VideoCapture
 from cvzone.HandTrackingModule import HandDetector
-
 from mqtt import connect_to_mqtt_broker
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 def get_player_from_ip_camera(rtsp_url: str) -> VideoCapture:
@@ -27,6 +26,7 @@ def get_player_from_ip_camera(rtsp_url: str) -> VideoCapture:
 
 
 def get_player_from_webcam():
+    logger.info("Connecting to webcam...")
     return cv2.VideoCapture(0)
 
 
@@ -54,13 +54,14 @@ def generate_rtsp_url(ip: str, hq: bool = False) -> str:
 
 
 def stream_video(ip: str, frame_rate: int = 2) -> None:
+    logger.info("Choosing device...")
     if ip == "localhost":
         player = get_player_from_webcam()
     else:
         rtsp_url = generate_rtsp_url(ip)
         player = get_player_from_ip_camera(rtsp_url)
 
-    logger.info("loading face detector...")
+    logger.warning("loading face detector...")
     # detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     prev: float = 0
     detector = HandDetector(detectionCon=0.8, maxHands=2)
@@ -98,6 +99,7 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
                 client.publish("home/camera/number_of_fingers", msg)
 
             if DEBUG:
+                logger.info(f"Message to be sent to mqtt broker: {msg}")
                 try:
                     cv2.imshow("Wyze v2 camera", img)
                 except cv2.error as e:
@@ -138,5 +140,4 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", help="print debug messages to stderr")
     args = parser.parse_args()
     DEBUG = args.debug
-
     stream_video(os.environ["CAMERA_IP"])
