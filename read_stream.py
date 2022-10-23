@@ -9,7 +9,7 @@ from cv2 import VideoCapture
 from cvzone.HandTrackingModule import HandDetector
 from mqtt import connect_to_mqtt_broker
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -44,6 +44,7 @@ def generate_rtsp_url(ip: str, hq: bool = False) -> str:
         raise ValueError("CAMERA_USER needs to be set as env variables!")
     elif "CAMERA_PW" not in os.environ:
         raise ValueError("CAMERA_PW needs to be set as env variables!")
+    logger.info(f"Connecting to rtsp stream on ip: {ip}")
     user = os.environ["CAMERA_USER"]
     pw = os.environ["CAMERA_PW"]
     if hq:
@@ -54,19 +55,21 @@ def generate_rtsp_url(ip: str, hq: bool = False) -> str:
 
 
 def stream_video(ip: str, frame_rate: int = 2) -> None:
-    logger.info("Choosing device...")
+    logger.info("Selecting device...")
     if ip == "localhost":
         player = get_player_from_webcam()
     else:
         rtsp_url = generate_rtsp_url(ip)
         player = get_player_from_ip_camera(rtsp_url)
 
-    logger.warning("loading face detector...")
-    # detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    #logger.info("Loading face detector...")
+    #detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     prev: float = 0
     detector = HandDetector(detectionCon=0.8, maxHands=2)
     if not DEBUG:
-        client = connect_to_mqtt_broker()
+        client = connect_to_mqtt_broker(os.environ["MQTT_BROKER_IP"], os.environ["MQTT_USER"], os.environ["MQTT_PW"])
+    else:
+        client = None
 
     while player.isOpened():
         time_elapsed = time.time() - prev
@@ -95,11 +98,11 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
                 msg = sum(fingers)
             else:
                 msg = "unavailable"
-            if not DEBUG:
-                client.publish("home/camera/number_of_fingers", msg)
+            if client:
+                client.publish(os.environ["MQTT_TOPIC"], msg)
 
             if DEBUG:
-                logger.info(f"Message to be sent to mqtt broker: {msg}")
+                logger.debug(f"Message to be sent to broker {os.environ['MQTT_BROKER_IP']} on topic {os.environ['MQTT_TOPIC']}: {msg}")
                 try:
                     cv2.imshow("Wyze v2 camera", img)
                 except cv2.error as e:
@@ -138,6 +141,7 @@ def haar_find_faces(frame, detector) -> np.ndarray:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="print debug messages to stderr")
+    parser.add_argument("--prod", action="store_true", help="Run in production mode")
     args = parser.parse_args()
     DEBUG = args.debug
     stream_video(os.environ["CAMERA_IP"])

@@ -9,6 +9,7 @@ the number of fingers identified as an mqtt package.
 -   CAMERA_PW: Camera password
 -   MQTT_USER: MQTT broker username
 -   MQTT_PW: MQTT broker password
+-   MODE: debug | prod. Variable stating if application should run in debug mode (not connecting to mqtt broker) or not.
 
 2. Build docker image
 ```bash
