@@ -13,6 +13,6 @@ def connect_to_mqtt_broker(mqtt_broker_ip: str, mqtt_user: str, mqtt_pw: str) ->
         transport="tcp",
     )
     mqtt_client.username_pw_set(username=mqtt_user, password=mqtt_pw)
-    mqtt_client.connect(os.environ["MQTT_BROKER_IP"])
+    mqtt_client.connect(mqtt_broker_ip)
     logger.info(f"Successfully connected to {mqtt_broker_ip}")    
     return mqtt_client

@@ -87,14 +87,13 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
                 hands = detector.findHands(img, draw=False)  # with draw
 
             if hands:
-                # Hand 1
-                hand = hands[0]
-                # lmList1 = hand["lmList"]  # List of 21 Landmark points
-                # bbox1 = hand["bbox"]  # Bounding box info x,y,w,h
-                # centerPoint1 = hand["center"]  # center of the hand cx,cy
-                # handType1 = hand["type"]  # Handtype Left or Right
-
-                fingers = detector.fingersUp(hand)
+                fingers = list()
+                for hand in hands:
+                    # lmList1 = hand["lmList"]  # List of 21 Landmark points
+                    # bbox1 = hand["bbox"]  # Bounding box info x,y,w,h
+                    # centerPoint1 = hand["center"]  # center of the hand cx,cy
+                    # handType1 = hand["type"]  # Handtype Left or Right
+                    fingers += detector.fingersUp(hand)
                 msg = sum(fingers)
             else:
                 msg = "unavailable"
@@ -104,7 +103,7 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
             if DEBUG:
                 logger.debug(f"Message to be sent to broker {os.environ['MQTT_BROKER_IP']} on topic {os.environ['MQTT_TOPIC']}: {msg}")
                 try:
-                    cv2.imshow("Wyze v2 camera", img)
+                    cv2.imshow("RTSP hand tracking camera", img)
                 except cv2.error as e:
                     logger.warning(e)
 
