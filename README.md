@@ -16,12 +16,12 @@ the number of fingers identified as an mqtt package.
 docker-compose build
 ```
 OBS! If you have chosen localhost as your CAMERA_IP and want to run in DEBUG mode to
-see the video, you'll need to run 
+see the video, you'll need to run
 ```
 . ./set_xauth_docker_token.sh
 ```
 first. The bash script will find your xauth token and set that to an env variable named
-XAUTH_DOCKER_TOKEN. Then you need to run the following to allow the docker container 
+XAUTH_DOCKER_TOKEN. Then you need to run the following to allow the docker container
 to use the display of the host.
 ```
 docker-compose build --build-arg XAUTH_TOKEN=${XAUTH_DOCKER_TOKEN}

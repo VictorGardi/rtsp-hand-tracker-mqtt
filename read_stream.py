@@ -7,6 +7,7 @@ import cv2
 import numpy as np
 from cv2 import VideoCapture
 from cvzone.HandTrackingModule import HandDetector
+
 from mqtt import connect_to_mqtt_broker
 
 logging.basicConfig(level=logging.DEBUG)
@@ -62,12 +63,14 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
         rtsp_url = generate_rtsp_url(ip)
         player = get_player_from_ip_camera(rtsp_url)
 
-    #logger.info("Loading face detector...")
-    #detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    # logger.info("Loading face detector...")
+    # detector = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     prev: float = 0
     detector = HandDetector(detectionCon=0.8, maxHands=2)
     if not DEBUG:
-        client = connect_to_mqtt_broker(os.environ["MQTT_BROKER_IP"], os.environ["MQTT_USER"], os.environ["MQTT_PW"])
+        client = connect_to_mqtt_broker(
+            os.environ["MQTT_BROKER_IP"], os.environ["MQTT_USER"], os.environ["MQTT_PW"]
+        )
     else:
         client = None
 
@@ -75,7 +78,7 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
         time_elapsed = time.time() - prev
         _, img = player.read()
         if time_elapsed > 1.0 / frame_rate:
-            #img = rescale_frame(img, percent=50)
+            # img = rescale_frame(img, percent=50)
             prev = time.time()
             # faces = haar_find_faces(frame, detector)
             # if len(faces) > 0:
@@ -101,7 +104,10 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
                 client.publish(os.environ["MQTT_TOPIC"], msg)
 
             if DEBUG:
-                logger.debug(f"Message to be sent to broker {os.environ['MQTT_BROKER_IP']} on topic {os.environ['MQTT_TOPIC']}: {msg}")
+                logger.debug(
+                    f"Message to be sent to broker {os.environ['MQTT_BROKER_IP']}"
+                    "on topic {os.environ['MQTT_TOPIC']}: {msg}"
+                )
                 try:
                     cv2.imshow("RTSP hand tracking camera", img)
                 except cv2.error as e:
