@@ -10,7 +10,11 @@ services:
       dockerfile: Dockerfile
       args:
           XAUTH_TOKEN: ${XAUTH_DOCKER_TOKEN}
-    network_mode: host
+    sysctls:
+      net.ipv4.ip_local_port_range: "40000 40010"
+      #network_mode: host
+    ports:
+      - "8501:8501"
     devices:
       - /dev/video0:/dev/video0
     environment:
@@ -22,4 +26,5 @@ services:
       - MQTT_BROKER_IP=${MQTT_BROKER_IP}
       - MQTT_TOPIC=${MQTT_TOPIC}
       - DISPLAY=${DISPLAY}
-    command: python3 -u read_stream.py --debug
+        #command: python3 -u read_stream.py --debug
+    command: streamlit run test.py --server.port=8501 --server.address=0.0.0.0

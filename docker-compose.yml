@@ -3,7 +3,7 @@ services:
   hand_tracker:
     container_name: hand_tracker
     volumes:
-      - ./:/app
+      - ./src/:/app
     build:
       context: .
       dockerfile: Dockerfile
