@@ -20,8 +20,8 @@ test = st.empty()
 
 
 def on_message(client, userdata, msg):
-    # if msg.topic != "home/camera/capture":
-    #    return
+    if msg.topic != "home/camera/capture":
+        return
     image = byte_array_to_pil_image(msg.payload)
     image = image.convert("RGB")
     viewer.image(image, width=VIEWER_WIDTH)
@@ -33,3 +33,7 @@ def main():
     client.connect(os.environ["MQTT_BROKER_IP"])
     client.subscribe("home/camera/capture")
     client.loop_forever()
+
+
+if __name__ == "__main__":
+    main()
