@@ -16,12 +16,12 @@ def get_random_numpy():
 
 title = st.title("MQTT viewer")
 viewer = st.image(get_random_numpy(), width=VIEWER_WIDTH)
+test = st.empty()
 
 
-# The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    if msg.topic != "home/camera/capture":
-        return
+    # if msg.topic != "home/camera/capture":
+    #    return
     image = byte_array_to_pil_image(msg.payload)
     image = image.convert("RGB")
     viewer.image(image, width=VIEWER_WIDTH)

@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def stream_video(ip: str, frame_rate: int = 2) -> None:
     logger.info("Selecting device...")
-    if ip == "localhost":
+    if "localhost" in ip:
         player = get_player_from_webcam()
     else:
         player = get_player_from_ip_camera(ip)
@@ -55,11 +55,11 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
             else:
                 msg = "unavailable"
             client.publish(os.environ["MQTT_TOPIC"], msg)
-
-            np_array_RGB = opencv2matplotlib(img)
-            image = Image.fromarray(np_array_RGB)
-            byte_array = pil_image_to_byte_array(image)
-            client.publish("home/camera/capture", byte_array, qos=1)
+            if DEBUG:
+                np_array_RGB = opencv2matplotlib(img)
+                image = Image.fromarray(np_array_RGB)
+                byte_array = pil_image_to_byte_array(image)
+                client.publish("home/camera/capture", byte_array, qos=1)
 
     player.release()
 

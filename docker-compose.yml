@@ -7,8 +7,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-          XAUTH_TOKEN: ${XAUTH_DOCKER_TOKEN}
     network_mode: host
     environment:
       - CAMERA_IP=${CAMERA_IP}
