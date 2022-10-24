@@ -106,7 +106,7 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
             if DEBUG:
                 logger.debug(
                     f"Message to be sent to broker {os.environ['MQTT_BROKER_IP']}"
-                    "on topic {os.environ['MQTT_TOPIC']}: {msg}"
+                    f" on topic {os.environ['MQTT_TOPIC']}: {msg}"
                 )
                 try:
                     cv2.imshow("RTSP hand tracking camera", img)

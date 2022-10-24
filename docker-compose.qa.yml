@@ -22,4 +22,4 @@ services:
       - MQTT_BROKER_IP=${MQTT_BROKER_IP}
       - MQTT_TOPIC=${MQTT_TOPIC}
       - DISPLAY=${DISPLAY}
-    command: python3 -u read_stream.py --${MODE}
+    command: python3 -u read_stream.py --debug

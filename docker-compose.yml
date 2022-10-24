@@ -18,4 +18,4 @@ services:
       - MQTT_PW=${MQTT_PW}
       - MQTT_BROKER_IP=${MQTT_BROKER_IP}
       - MQTT_TOPIC=${MQTT_TOPIC}
-    command: python3 -u read_stream.py --${MODE}
+    command: python3 -u read_stream.py --prod
