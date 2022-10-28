@@ -13,7 +13,7 @@ def on_connect(client, userdata, flags, rc):
         print("Bad connection to MQTT broker, returned code=", rc)
 
 
-def connect_to_mqtt_broker(mqtt_user: str, mqtt_pw: str) -> client.Client:
+def get_mqtt_client(mqtt_user: str, mqtt_pw: str) -> client.Client:
     mqtt_client = client.Client()
     mqtt_client.username_pw_set(username=mqtt_user, password=mqtt_pw)
     mqtt_client.on_connect = on_connect

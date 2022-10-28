@@ -8,6 +8,8 @@ services:
       context: .
       dockerfile: Dockerfile
     network_mode: host
+    devices:
+      - /dev/video0:/dev/video0
     environment:
       - CAMERA_IP=${CAMERA_IP}
       - CAMERA_USER=${CAMERA_USER}
@@ -16,4 +18,10 @@ services:
       - MQTT_PW=${MQTT_PW}
       - MQTT_BROKER_IP=${MQTT_BROKER_IP}
       - MQTT_TOPIC=${MQTT_TOPIC}
+      - SINK_STREAM=${SINK_STREAM}
     command: python3 -u read_stream.py --prod
+  rtsp:
+    image: docker.io/aler9/rtsp-simple-server:latest
+    network_mode: host
+    #ports:
+    #  - "8554:8554"

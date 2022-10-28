@@ -1,24 +1,15 @@
-import io
 import logging
 import os
 
 import cv2
 import numpy as np
 from cv2 import VideoCapture
-from PIL import Image
+from vidgear.gears import CamGear, VideoGear
+
+from read_stream import VERBOSE
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-
-def pil_image_to_byte_array(image):
-    img_bytes = io.BytesIO()
-    image.save(img_bytes, "PNG")
-    return img_bytes.getvalue()
-
-
-def byte_array_to_pil_image(byte_array):
-    return Image.open(io.BytesIO(byte_array))
 
 
 def get_player_from_ip_camera(ip: str) -> VideoCapture:
@@ -31,12 +22,24 @@ def get_player_from_ip_camera(ip: str) -> VideoCapture:
         VideoCapture: opencv player
     """
     rtsp_url = generate_rtsp_url(ip)
-    return cv2.VideoCapture(rtsp_url)
+    return CamGear(
+        source=rtsp_url,
+        colorspace="COLOR_BGR2RGB",
+        logging=VERBOSE,
+        **{"THREADED_QUEUE_MODE": False, "-fflags": "nobuffer"},
+    ).start()
+    # return cv2.VideoCapture(rtsp_url)
 
 
 def get_player_from_webcam():
     logger.info("Connecting to webcam...")
-    return cv2.VideoCapture(0)
+    options = {
+        "CAP_PROP_FRAME_WIDTH": 320,  # resolution 320x240
+        "CAP_PROP_FRAME_HEIGHT": 240,
+        "CAP_PROP_FPS": 60,  # framerate 60fps
+    }
+    return VideoGear(source=0, logging=True, **options).start()
+    # return cv2.VideoCapture(0)
 
 
 def generate_rtsp_url(ip: str, hq: bool = False) -> str:
