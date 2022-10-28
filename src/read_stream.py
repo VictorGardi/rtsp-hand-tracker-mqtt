@@ -32,8 +32,9 @@ def stream_video(ip: str, frame_rate: int = 2) -> None:
     detector = HandDetector(detectionCon=0.8, maxHands=2)
     client = get_mqtt_client(os.environ["MQTT_USER"], os.environ["MQTT_PW"])
     client.connect(os.environ["MQTT_BROKER_IP"])
+    sink_stream = "rtsp://host.docker.internal:8554/stream"
     sink = WriteGear(
-        output_filename=SINK_STREAM,
+        output_filename=sink_stream,
         logging=VERBOSE,
         **{
             "-f": "rtsp",
