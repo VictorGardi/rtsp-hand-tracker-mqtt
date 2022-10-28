@@ -1,6 +1,6 @@
 FROM python:3.9
 # cv2 dependencies
-RUN apt update && apt install libgl1 net-tools libsm6 ffmpeg -y
+RUN apt update && apt install libgl1 net-tools libsm6 ffmpeg libxext6 -y
 
 WORKDIR /app
 ENV PYTHONPATH="$PYTHONPATH:/app"

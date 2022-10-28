@@ -8,8 +8,8 @@ services:
       context: .
       dockerfile: Dockerfile
     network_mode: host
-    devices:
-      - /dev/video0:/dev/video0
+      #devices:
+      #- /dev/video0:/dev/video0
     environment:
       - CAMERA_IP=${CAMERA_IP}
       - CAMERA_USER=${CAMERA_USER}

@@ -6,7 +6,7 @@ import numpy as np
 from cv2 import VideoCapture
 from vidgear.gears import CamGear, VideoGear
 
-from read_stream import VERBOSE
+from globals import VERBOSE
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)

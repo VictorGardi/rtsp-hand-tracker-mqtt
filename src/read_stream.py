@@ -7,6 +7,7 @@ from cvzone.HandTrackingModule import HandDetector
 from environs import Env
 from vidgear.gears import WriteGear
 
+from globals import VERBOSE
 from helpers import get_player_from_ip_camera, get_player_from_webcam
 from mqtt import get_mqtt_client
 
@@ -16,8 +17,6 @@ logger = logging.getLogger(__name__)
 env = Env()
 
 SINK_STREAM: str = env("SINK_STREAM")
-LOG_LEVEL = env.log_level("LOG_LEVEL", logging.WARNING)
-VERBOSE = LOG_LEVEL <= logging.INFO
 
 
 def stream_video(ip: str, frame_rate: int = 2) -> None:
